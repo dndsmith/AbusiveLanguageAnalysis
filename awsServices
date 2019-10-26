@@ -1,0 +1,79 @@
+import boto3
+import sys
+import magic
+
+
+# finds the file extension
+# returns file type
+def findMimeType(inFile):
+    mime = magic.Magic(mime=True)
+    fileMime = mime.from_file(inFile)
+    fileType = fileMime.split('/')
+
+    return fileType[0]
+
+
+def transcribe(bucketname, filename):
+    transcribe = boto3.client('transcribe')
+    jobName = "transcribe speech"
+
+    # link to s3 endpoint
+    jobURI = "s3://" + bucketname + "/" + filename
+
+    # transcribe audio and outputs transcript into s3 bucket
+    transcribe.start_transcription_job(
+        TranscriptionJobName=jobName,
+        LanguageCode='en-US',
+        Media={'MediaFileUri': jobURI},
+        OutputBucketName=bucketname
+    )
+
+
+def rekognition(bucketname, file):
+    fullText = ''
+
+    rekognition = boto3.client('rekognition')
+    # looking at object
+    response = rekognition.detect_text(Image={'S3Object': {'Bucket': bucketname, 'Name': file}})
+    textDectections = response['TextDetections']
+
+    # printing out detected text in photos
+    for text in textDectections:
+        fullText = fullText + text['DetectedText'] + ' '
+
+    # create text file from the detected photo
+    outfile = open('rekognition.txt', 'w')
+    outfile.write(fullText)
+    uploadS3(bucketname, outfile)
+
+
+# speech to text
+def polly(textFile):
+    with open(textFile, 'r') as file:
+        text = file.read()
+    command = 'aws polly synthesize-speech --text-type ssml --output-format "mp3" --voice-id "Joanna" --text <speak>' + text + '</speak>'
+
+
+def uploadS3(bucketname, filename):
+    s3 = boto3.client('s3')
+    # upload to s3
+    s3.upload_file(filename, bucketname, filename)
+
+
+if __name__ == '__main__':
+    bucketname = 'hackgtfiles'
+
+    # get file type
+    inFile = sys.argv[1]
+    fileType = findMimeType(inFile)
+
+    if fileType == 'image':
+        uploadS3(bucketname, inFile)
+        rekognition(bucketname, inFile)
+    elif fileType[0] == 'text' or 'application':
+        polly(inFile)
+    elif fileType == 'audio':
+        uploadS3(bucketname, inFile)
+        transcribe(bucketname, inFile)
+    else:
+        print("Sorry, we do not accept this file type")
