@@ -1,15 +1,17 @@
 import boto3
 import sys
 import magic
+import subprocess
+import codecs
 
 
 # finds the file extension
-# returns file type
 def findMimeType(inFile):
     mime = magic.Magic(mime=True)
     fileMime = mime.from_file(inFile)
     fileType = fileMime.split('/')
 
+    # returns file type
     return fileType[0]
 
 
@@ -49,9 +51,37 @@ def rekognition(bucketname, file):
 
 # speech to text
 def polly(textFile):
-    with open(textFile, 'r') as file:
-        text = file.read()
-    command = 'aws polly synthesize-speech --text-type ssml --output-format "mp3" --voice-id "Joanna" --text <speak>' + text + '</speak>'
+    cnt = 0
+    file_names = ''
+
+    for line in textFile:
+        rendered = ''
+        line = line.replace('"', '\\"')
+        command = 'aws polly synthesize-speech --text-type ssml --output-format "mp3" --voice-id "Salli" --text "{0}" {1}'
+
+        if '\r\n' == line:
+            # A pause after a paragraph
+            rendered = '<speak><break time= "2s"/></speak>'
+        else:
+            # A pause after a sentence
+            rendered = '<speak><amazon:effect name=\\"drc\\">' + line.strip() + '<break time=\\"1s\\"/></amazon:effect></speak>'
+
+        file_name = ' polly_out{0}.mp3'.format(u''.join(str(cnt)).encode('utf-8'))
+        cnt += 1
+        command = command.format(rendered.encode('utf-8'), file_name)
+        file_names += file_name
+        print(command)
+        subprocess.call(command, shell=True)
+
+    print(file_names)
+    execute_command = 'cat ' + file_names + '>result.mp3'
+    subprocess.call(execute_command, shell=True)
+
+    execute_command = 'rm ' + file_names
+    print('Removing temporary files: ' + execute_command)
+    subprocess.call(execute_command, shell=True)
+
+
 
 
 def uploadS3(bucketname, filename):
