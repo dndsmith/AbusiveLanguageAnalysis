@@ -10,6 +10,7 @@ from sklearn.model_selection import train_test_split
 import sklearn
 import sys
 import os
+import pickle
 
 # get data file to read in
 print("Please enter the name of the dataset you wish to train on:")
@@ -133,6 +134,11 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.333, strat
 
 # fit best model and make predictions
 best_model.fit(X_train, y_train)
+
+# pickle model
+pickled_model_file = './saved_models/' + datasetName + '_pickled.sav'
+pickle.dump(best_model, open(pickled_model_file, 'wb'))
+
 y_pred = best_model.predict(X_test)
 y_pred_prob = best_model.predict_proba(X_test)[:,1]
 print(sklearn.metrics.classification_report(y_test, y_pred))
