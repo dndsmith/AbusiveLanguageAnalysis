@@ -1,0 +1,141 @@
+body{
+  background: rgba(235,255,255,0.9);
+   font-family: "Poppins", sans-serif;
+  display: flex;
+  flex-direction:column;
+  justify-content: space-between;
+}
+.header {
+  display: flex;
+  justify-content: center;
+  padding: 16px;
+  font-size:180%;
+  top: 0;
+  left: 0;
+  background-color:#6f42c1;
+  border-radius: 11%;
+  box-shadow: 2px 2px 6px 0px  rgba(0,0,0,0.5);
+
+}
+.title{
+  background-color:white;
+  color:#6f42c1;
+  border-radius: 75px;
+  padding:1%;
+  box-shadow: 2px 2px 6px 0px  rgba(0,0,0,0.5);
+}
+.w3-jumbo{
+  color:#6f42c1;
+  padding:0px;
+  font-size:110%;
+  display: flex;
+  flex-direction:column;
+  justify-content: center;
+
+  padding: 0% 25% 0% 25%;
+}
+.subtitle{
+  display: flex;
+  justify-content: center;
+  background-color:white;
+  color:#6f42c1;
+  border-radius: 25px;
+  padding:10px;
+  box-shadow: 2px 2px 6px 0px  rgba(0,0,0,0.5);
+}
+.hr{
+  width:50px;
+  border: 5px solid #6f42c1;
+  border-radius: 5px;
+  text-align:left;
+  margin-left:0;
+}
+#formats{
+  padding: 0%
+}
+main{
+  display: flex;
+  flex-direction:row;
+  justify-content: space-around;
+}
+.theWord{
+  display: flex;
+  flex-direction:column;
+  justify-content:space-around;
+
+  padding: 0% 2% 0% 2%;
+}
+#myTextarea{
+  display: flex;
+  resize: none;
+  width: 99%;
+  height:80%;
+  border-radius: 20px;
+  align-text:center;
+}
+
+
+.clacker{
+  display: flex;
+  justify-content: center;
+  flex-direction: row;
+  width: 500px;
+  height: 400px;
+
+}
+.cloocker{
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+
+}
+#secBtn{
+  display: flex;
+  border-radius: 25px;
+  box-shadow: 2px 2px 6px 0px rgba(0,0,0,0.5);
+  width: 300px;
+  height: 200px;
+  padding: 5%;
+  justify-content: center;
+  color: rgb(235,255,255);
+  font-size: 200%;
+  background-color:#6f42c1;
+  border: none;
+}
+
+
+
+form{
+  display: flex;
+  width: 500px;
+  height: 400px;
+  border: 4px dashed #6f42c1;
+  border-radius: 25px;
+  box-shadow: 2px 2px 6px 0px  rgba(0,0,0,0.5);
+
+}
+form:hover {
+  background-color: #f6f6f6;
+}
+
+
+
+.theForm{
+ width: 500px;
+  height: 400px;
+  border: 4px dashed #6f42c1;
+  border-radius: 25px;
+  box-shadow: 2px 2px 6px 0px  rgba(0,0,0,0.5);
+
+}
+.theForm p{
+  text-align: center;
+  color: #6f42c1;
+}
+#fileInput{
+   display: flex;
+  width: 100%;
+  height: 100%;
+  opacity:0;
+
+}

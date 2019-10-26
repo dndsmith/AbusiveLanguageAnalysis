@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Is This Abuse?</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Poppins">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='theme.css') }}">
+    <script src="{{url_for('static', filename='script.js')}}"></script>
+
+
+</head>
+<body>
+
+  <div id="test">
+  <header class="header">
+    <h1 class="title"><b>Is This Abuse?</b></h1>
+  </header>
+
+  <div class="w3-jumbo">
+  <h1 class = "subtitle">Input Media File</h1>
+    <hr class="hr">
+    <p id="formats">Accepted formats: .jpg, .png, .pdf, .mp3</p>
+  </div>
+  <main>
+    <div>
+      <form action="process-form.php" class="theWord" method="POST">
+        <textarea id="myTextarea" placeholder=" Paste Text"  required></textarea>
+        <button id="mybutton" type="submit" name="theWord" onclick="changeIt()" hidden="hidden">Submit</button>
+      </form>
+    </div>
+    <div class= "clacker">
+        <div class="cloocker">
+          <button id="secBtn" onclick="clicky()" hidden="hidden">Submit</button>
+        </div>
+    </div>
+
+    <div class= "theForm">
+        <p>Upload your files by clicking in this area.</p>
+        <input type="file" id="fileInput">
+      <pre id="fileDisplayArea"></pre>
+    </div>
+  </main>
+  </div>
+</body>
+</html>
