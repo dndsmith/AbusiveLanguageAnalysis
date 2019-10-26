@@ -119,6 +119,10 @@ responseCol = input()
 X = df_model.drop(list(df.columns.values), axis=1) # drop columns from dataset to get X (the word embeddings)
 y = df_model.loc[:, responseCol]
 
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.333, stratify=y)
+print(X_test)
+sys.exit()
+
 # Define and fit a logistic regression model
 estimator = LogisticRegression(solver='lbfgs', multi_class='multinomial')
 params = dict(C=np.logspace(0,4,20))
