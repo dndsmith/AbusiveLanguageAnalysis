@@ -1,4 +1,5 @@
 import boto3
+from boto3 import Session
 import sys
 import magic
 import subprocess
@@ -13,6 +14,12 @@ def findMimeType(inFile):
 
     # returns file type
     return fileType[0]
+
+
+def uploadS3(bucketname, filename):
+    s3 = boto3.client('s3')
+    # upload to s3
+    s3.upload_file(filename, bucketname, filename)
 
 
 def transcribe(bucketname, filename):
@@ -48,50 +55,61 @@ def rekognition(bucketname, file):
     outfile.write(fullText)
     uploadS3(bucketname, outfile)
 
+    return outfile
+
 
 # speech to text
-def polly(textFile):
-    cnt = 0
-    file_names = ''
+def polly(bucketname, textFile):
+    #cnt = 0
+    #file_names = ''
+    polly = Session(aws_access_key_id='', aws_secret_access_key='', region_name='us-east-1').client('polly')
 
-    for line in textFile:
-        rendered = ''
-        line = line.replace('"', '\\"')
-        command = 'aws polly synthesize-speech --text-type ssml --output-format "mp3" --voice-id "Salli" --text "{0}" {1}'
+    with open(textFile, 'r') as file:
+        text = file.read()
 
-        if '\r\n' == line:
+    response = polly.synthesize_speech(VoiceId='Joanna', OutputFormat='mp3', Text=text)
+
+    mp3 = open('result.mp3', 'wb')
+    mp3.write(response['AudioStream'].read())
+    mp3.close()
+
+    uploadS3(bucketname, 'result.mp3')
+    
+
+    #for line in textFile:
+    #    rendered = ''
+    #    line = line.replace('"', '\\"')
+    #    command = 'aws polly synthesize-speech --text-type ssml --output-format "mp3" --voice-id "Joanna" --text "<speak>' + text + '</speaker>"'
+
+    #    if '\r\n' == line:
             # A pause after a paragraph
-            rendered = '<speak><break time= "2s"/></speak>'
-        else:
+    #        rendered = '<speak><break time= "2s"/></speak>'
+    #    else:
             # A pause after a sentence
-            rendered = '<speak><amazon:effect name=\\"drc\\">' + line.strip() + '<break time=\\"1s\\"/></amazon:effect></speak>'
+    #        rendered = '<speak><amazon:effect name=\\"drc\\">' + line.strip() + '<break time=\\"1s\\"/></amazon:effect></speak>'
 
-        file_name = ' polly_out{0}.mp3'.format(u''.join(str(cnt)).encode('utf-8'))
-        cnt += 1
-        command = command.format(rendered.encode('utf-8'), file_name)
-        file_names += file_name
-        print(command)
-        subprocess.call(command, shell=True)
+   #     file_name = ' polly_out{0}.mp3'.format(u''.join(str(cnt)).encode('utf-8'))
+    #    cnt += 1
+    #    command = command.format(rendered.encode('utf-8'), file_name)
+    #    file_names += file_name
+        #print(command)
+    #    subprocess.call(command, shell=True)
 
-    print(file_names)
-    execute_command = 'cat ' + file_names + '>result.mp3'
-    subprocess.call(execute_command, shell=True)
+    
+    #print(file_names)
+    #mp3File = 'result.mp3'
 
-    execute_command = 'rm ' + file_names
-    print('Removing temporary files: ' + execute_command)
-    subprocess.call(execute_command, shell=True)
+    #execute_command = 'cat ' + file_names + '>' + mp3File
+    #subprocess.call(execute_command, shell=True)
 
+    #execute_command = 'rm ' + file_names
+    #print('Removing temporary files: ' + execute_command)
+    #subprocess.call(execute_command, shell=True)
 
-
-
-def uploadS3(bucketname, filename):
-    s3 = boto3.client('s3')
-    # upload to s3
-    s3.upload_file(filename, bucketname, filename)
 
 
 if __name__ == '__main__':
-    bucketname = 'hackgtfiles'
+    bucketname = 'hackgt6files'
 
     # get file type
     inFile = sys.argv[1]
@@ -99,9 +117,10 @@ if __name__ == '__main__':
 
     if fileType == 'image':
         uploadS3(bucketname, inFile)
-        rekognition(bucketname, inFile)
-    elif fileType[0] == 'text' or 'application':
-        polly(inFile)
+        outfile = rekognition(bucketname, inFile)
+        polly(bucketname, outfile)
+    elif fileType == 'text' or 'application':
+        polly(bucketname, inFile)
     elif fileType == 'audio':
         uploadS3(bucketname, inFile)
         transcribe(bucketname, inFile)
