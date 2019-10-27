@@ -8,6 +8,7 @@ import subprocess
 import codecs
 import time
 
+bucketname = 'hackgt6files'
 
 # finds the file extension
 def findMimeType(inFile):
@@ -19,14 +20,20 @@ def findMimeType(inFile):
     return fileType[0]
 
 
-def uploadS3(bucketname, filename):
+def uploadS3(filename):
     s3 = boto3.client('s3')
     # upload to s3
     s3.upload_file(filename, bucketname, filename)
 
 
-def transcribe(bucketname, filename):
+def transcribe(filename):
+    text =''
+    i = 0
+    bool = True
+    
     transcribe = boto3.client('transcribe')
+    
+    uploadS3(bucketname, filename)
     file = filename.split('.')
 
     jobName = file[0] + "-transcribe-speech"
@@ -49,10 +56,36 @@ def transcribe(bucketname, filename):
         print("Not ready yet...")
         time.sleep(5)
 
-    return jobName + '.json'
+    name = jobName + '.json'
+
+    s3 = boto3.resource('s3')
+    bucket = s3.Bucket(bucketname)
+
+    for obj in bucket.objects.all():
+        key = obj.key
+        if key == name:
+            body = obj.get()['Body'].read().decode('utf-8')
+
+            while bool == True:
+                if body[i - 2] == '[':
+                    while True:
+                        text = text + body[i]
+                        if body[i + 2] == ']':
+                            bool = False
+                            break
+                        i = i + 1
+                i = i + 1
+
+            temp = text.split(':')
+            cleanText = temp[1]
+            transcript = cleanText[1:-1]
+            
+    return transcript
 
 
-def rekognition(bucketname, file):
+#image to text detection
+def rekognition(file):
+    uploadS3(bucketname, file)
     fullText = ''
 
     rekognition = boto3.client('rekognition')
@@ -64,20 +97,11 @@ def rekognition(bucketname, file):
     for text in textDectections:
         fullText = fullText + text['DetectedText'] + ' '
 
-    # create text file from the detected photo
-    print(fullText)
-    fileName = file.split('.')
-    newFileName = fileName[0] + '.txt'
-
-    outfile = open(newFileName, 'w')
-    outfile.write(fullText)
-    outfile.close
-
-    return newFileName
+    return fullText
 
 
 # speech to text
-def polly(bucketname, textFile, keyFile):
+def polly(textFile, keyFile):
     #cnt = 0
     #file_names = ''
     with open(keyFile, 'r') as f:
@@ -99,63 +123,6 @@ def polly(bucketname, textFile, keyFile):
     mp3.close()
 
     uploadS3(bucketname, mp3File)
-
-
-if __name__ == '__main__':
-    text =''
-    i = 0
-    bool = True
-    bucketname = 'hackgt6files'
-
-    # get file type
-    inFile = sys.argv[1]
-    fileType = findMimeType(inFile)
     
-    # image to text -> polly
-    if fileType == 'image':
-        uploadS3(bucketname, inFile)
-        outfile = rekognition(bucketname, inFile)
-        polly(bucketname, outfile, sys.argv[2])
-
-    # text to speech
-    elif fileType == 'text':
-        polly(bucketname, inFile, sys.argv[2])
-
-    # speech to text back to speech
-    elif fileType == 'audio' or 'application':
-        # upload first to s3 so that has it has access
-        uploadS3(bucketname, inFile)
-        out = transcribe(bucketname, inFile)
-        s3 = boto3.resource('s3')
-        bucket = s3.Bucket(bucketname)
-
-        # read the object that contains the transcript
-        for obj in bucket.objects.all():
-            key = obj.key
-            if key == out:
-                body = obj.get()['Body'].read().decode('utf-8')
-
-                # clean the transcript of [] and ""
-                while bool == True:
-                    if body[i-2] == '[':
-                        while True:
-                            text = text + body[i]
-                            if body[i+2] == ']':
-                                bool = False
-                                break
-                            i = i + 1
-                    i = i + 1
-
-                temp = text.split(':')
-                cleanText = temp[1]
-                transcript = cleanText[1:-1]
-
-                # send it to polly
-                outfile = open('file.txt', 'w')
-                outfile.write(transcript)
-                outfile.close
-                polly(bucketname, 'file.txt', sys.argv[2])
-
-    else:
-        print("Sorry, we do not accept this file type")
+    return mp3File
 
