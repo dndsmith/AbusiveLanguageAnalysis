@@ -30,10 +30,12 @@ def PredictAbuse(text):
     regex = r'[' + string.punctuation + ']'
     text = re.sub(regex, '', text)
     text = re.sub(r' ', '', text)
+    if len(text) > 64:
+        text = text[:64]
     plt.savefig('./img/' + text + '.png')
 
     print('Prediction: ' + abuse)
     print(probabilities)
-    return 'Prediction: ' + abuse + '\n' + probabilities
+    return 'Prediction: ' + abuse
 
-PredictAbuse('I\'m sorry, but that is not correct, because according to the encyclopedia of Oxford, you are wrong.')
+PredictAbuse('I do not like you. You are an idiot.')
