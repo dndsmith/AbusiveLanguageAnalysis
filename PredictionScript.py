@@ -12,7 +12,6 @@ def PredictAbuse(text):
     model = pickle.load(open('./saved_models/cleaned_data_pickled.sav', 'rb'))
 
     colors = ['green', 'red']
-    labels = ['Not abusive', 'Abusive']
     xAxis = ['Not abusive', 'Abusive']
 
     test = ft.get_sentence_vector(text)
@@ -33,9 +32,12 @@ def PredictAbuse(text):
     if len(text) > 64:
         text = text[:64]
     plt.savefig('./img/' + text + '.png')
+    plt.show()
 
     print('Prediction: ' + abuse)
     print(probabilities)
     return 'Prediction: ' + abuse
 
-PredictAbuse('I do not like you. You are an idiot.')
+print('Is this abuse? Enter some text to find out.')
+text = input()
+PredictAbuse(text)
