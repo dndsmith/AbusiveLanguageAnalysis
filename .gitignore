@@ -108,3 +108,8 @@ venv.bak/
 
 # fasttext
 *.bin
+
+# images
+*.png
+*.jpg
+*.jpeg
